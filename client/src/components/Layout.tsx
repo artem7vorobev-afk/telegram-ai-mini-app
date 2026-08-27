@@ -1,4 +1,4 @@
-import { Outlet, useLocation } from 'react-router-dom'
+import { useLocation } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAppStore } from '../store/appStore'
 import { t } from '../lib/i18n'
@@ -7,7 +7,11 @@ import {
   Wallet, User, Coins, Users 
 } from 'lucide-react'
 
-export default function Layout() {
+interface LayoutProps {
+  children: React.ReactNode
+}
+
+export default function Layout({ children }: LayoutProps) {
   const location = useLocation()
   const { user, language } = useAppStore()
 
@@ -48,7 +52,7 @@ export default function Layout() {
             exit={{ opacity: 0, x: -20 }}
             transition={{ duration: 0.2 }}
           >
-            <Outlet />
+            {children}
           </motion.div>
         </AnimatePresence>
       </main>
