@@ -3,8 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useAppStore } from '../store/appStore'
 import { t } from '../lib/i18n'
 import { 
-  Home, MessageSquare, Image, Mic, Video, Music2, 
-  Wallet, User, Coins, Users 
+  Home, MessageSquare, Image, 
+  Wallet, User, Coins 
 } from 'lucide-react'
 
 interface LayoutProps {
@@ -19,11 +19,7 @@ export default function Layout({ children }: LayoutProps) {
     { path: '/', icon: Home, label: t('home', language) },
     { path: '/chat', icon: MessageSquare, label: t('chat', language) },
     { path: '/image', icon: Image, label: t('image', language) },
-    { path: '/audio', icon: Mic, label: t('audio', language) },
-    { path: '/video', icon: Video, label: t('video', language) },
-    { path: '/music', icon: Music2, label: t('music', language) },
     { path: '/wallet', icon: Wallet, label: t('wallet', language) },
-    { path: '/referrals', icon: Users, label: t('referrals', language) },
     { path: '/profile', icon: User, label: t('profile', language) },
   ]
 
