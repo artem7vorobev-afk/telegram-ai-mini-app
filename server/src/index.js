@@ -7,6 +7,7 @@ const authRoutes = require('./routes/auth');
 const aiRoutes = require('./routes/ai');
 const paymentRoutes = require('./routes/payment');
 const userRoutes = require('./routes/user');
+const telegramRoutes = require('./routes/telegram');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -28,6 +29,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api', aiRoutes);
 app.use('/api/payment', paymentRoutes);
 app.use('/api/user', userRoutes);
+app.use('/api/telegram', telegramRoutes);
 
 // Health check
 app.get('/health', (req, res) => {
