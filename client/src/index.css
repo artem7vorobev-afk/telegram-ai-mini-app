@@ -1,0 +1,48 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    @apply border-telegram-surface;
+  }
+  
+  body {
+    @apply bg-telegram-bg text-telegram-text antialiased;
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  ::-webkit-scrollbar {
+    @apply w-2;
+  }
+  
+  ::-webkit-scrollbar-track {
+    @apply bg-telegram-bg;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    @apply bg-telegram-surface rounded-full;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-telegram-accent text-white font-medium py-3 px-6 rounded-xl active:scale-95 transition-transform;
+  }
+  
+  .btn-secondary {
+    @apply bg-telegram-surface text-telegram-text font-medium py-3 px-6 rounded-xl active:scale-95 transition-transform;
+  }
+  
+  .card {
+    @apply bg-telegram-surface rounded-2xl p-4;
+  }
+  
+  .input {
+    @apply bg-telegram-bg border border-telegram-surface rounded-xl px-4 py-3 text-telegram-text placeholder-telegram-secondary focus:outline-none focus:border-telegram-accent;
+  }
+  
+  .skeleton {
+    @apply bg-telegram-surface animate-pulse rounded;
+  }
+}
