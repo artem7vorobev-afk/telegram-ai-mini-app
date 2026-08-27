@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { useAppStore } from '../store/appStore'
-import { t } from '../lib/i18n'
 import { User, Settings, Globe, Bell, LogOut, Loader2, Copy, History, Wallet, Users, ArrowUpRight, ArrowDownLeft } from 'lucide-react'
 
 export default function Profile() {
