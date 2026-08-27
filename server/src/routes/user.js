@@ -103,4 +103,20 @@ router.get('/chat-history', authenticateToken, (req, res) => {
   }
 });
 
+// Get deposit history
+router.get('/deposits', authenticateToken, (req, res) => {
+  try {
+    const deposits = db.prepare(`
+      SELECT * FROM transactions
+      WHERE user_id = ? AND type = 'deposit'
+      ORDER BY created_at DESC
+      LIMIT 50
+    `).all(req.user.userId);
+    
+    res.json({ deposits });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch deposit history' });
+  }
+});
+
 module.exports = router;
