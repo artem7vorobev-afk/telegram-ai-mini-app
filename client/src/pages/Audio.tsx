@@ -2,8 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useAppStore } from '../store/appStore'
-import { t } from '../lib/i18n'
-import { Mic, Play, Download, Loader2, Volume2 } from 'lucide-react'
+import { Mic, Download, Loader2, Volume2 } from 'lucide-react'
 
 const voices = [
   { id: '21m00Tcm4TlvDq8ikWAM', name: 'Rachel', gender: 'Female' },
@@ -15,7 +14,7 @@ const voices = [
 
 export default function Audio() {
   const navigate = useNavigate()
-  const { token, language } = useAppStore()
+  const { token } = useAppStore()
   const [text, setText] = useState('')
   const [selectedVoice, setSelectedVoice] = useState(voices[0].id)
   const [isGenerating, setIsGenerating] = useState(false)

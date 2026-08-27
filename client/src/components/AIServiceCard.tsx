@@ -29,7 +29,7 @@ const categoryColors = {
 }
 
 export default function AIServiceCard({ 
-  id, name, category, tokenCost, description, onClick 
+  name, category, tokenCost, description, onClick 
 }: AIServiceCardProps) {
   const Icon = categoryIcons[category]
   const colorClass = categoryColors[category]

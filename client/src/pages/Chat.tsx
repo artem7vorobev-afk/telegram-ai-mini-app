@@ -19,7 +19,7 @@ export default function Chat() {
   const navigate = useNavigate()
   const location = useLocation()
   const { token, language } = useAppStore()
-  const { messages, currentModel, isLoading, addMessage, setCurrentModel, setLoading, clearMessages } = useChatStore()
+  const { messages, currentModel, isLoading, addMessage, setCurrentModel, setLoading } = useChatStore()
   const [input, setInput] = useState('')
   const [showModelSelector, setShowModelSelector] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
