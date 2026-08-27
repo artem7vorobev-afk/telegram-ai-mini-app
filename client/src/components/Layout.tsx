@@ -1,4 +1,4 @@
-import { useLocation } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAppStore } from '../store/appStore'
 import { t } from '../lib/i18n'
@@ -13,6 +13,7 @@ interface LayoutProps {
 
 export default function Layout({ children }: LayoutProps) {
   const location = useLocation()
+  const navigate = useNavigate()
   const { user, language } = useAppStore()
 
   const navItems = [
@@ -56,12 +57,13 @@ export default function Layout({ children }: LayoutProps) {
       {/* Bottom Navigation */}
       <nav className="fixed bottom-0 left-0 right-0 bg-telegram-bg/90 backdrop-blur-lg border-t border-telegram-surface">
         <div className="flex justify-around py-2">
-          {navItems.slice(0, 5).map((item) => {
+          {navItems.map((item) => {
             const Icon = item.icon
             const isActive = location.pathname === item.path
             return (
               <button
                 key={item.path}
+                onClick={() => navigate(item.path)}
                 className={`flex flex-col items-center gap-1 p-2 rounded-lg transition-colors ${
                   isActive ? 'text-telegram-accent' : 'text-telegram-secondary'
                 }`}
