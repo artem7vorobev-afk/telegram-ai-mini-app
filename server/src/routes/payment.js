@@ -97,6 +97,21 @@ router.post('/webhook/yookassa', async (req, res) => {
           SET status = 'completed' 
           WHERE payment_id = ? AND user_id = ?
         `).run(payment.id, userId);
+
+        // Award 10% referral commission if user has a referrer
+        const user = db.prepare('SELECT referred_by FROM users WHERE id = ?').get(userId);
+        if (user && user.referred_by) {
+          const commission = Math.floor(pkg.tokens * 0.1); // 10% commission
+          if (commission > 0) {
+            db.prepare('UPDATE users SET tokens_balance = tokens_balance + ? WHERE id = ?')
+              .run(commission, user.referred_by);
+            
+            db.prepare(`
+              INSERT INTO referral_earnings (referrer_id, referred_user_id, tokens_earned)
+              VALUES (?, ?, ?)
+            `).run(user.referred_by, userId, commission);
+          }
+        }
       }
     }
     
@@ -150,6 +165,21 @@ router.post('/crypto', authenticateToken, async (req, res) => {
       INSERT INTO transactions (user_id, type, amount, description, status, payment_method, payment_id)
       VALUES (?, 'topup', ?, ?, 'completed', 'crypto', ?)
     `).run(req.user.userId, pkg.tokens, pkg.name, txHash);
+
+    // Award 10% referral commission if user has a referrer
+    const user = db.prepare('SELECT referred_by FROM users WHERE id = ?').get(req.user.userId);
+    if (user && user.referred_by) {
+      const commission = Math.floor(pkg.tokens * 0.1); // 10% commission
+      if (commission > 0) {
+        db.prepare('UPDATE users SET tokens_balance = tokens_balance + ? WHERE id = ?')
+          .run(commission, user.referred_by);
+        
+        db.prepare(`
+          INSERT INTO referral_earnings (referrer_id, referred_user_id, tokens_earned)
+          VALUES (?, ?, ?)
+        `).run(user.referred_by, req.user.userId, commission);
+      }
+    }
 
     res.json({ status: 'completed' });
   } catch (error) {

@@ -41,10 +41,10 @@ router.post('/verify', async (req, res) => {
         }
       }
 
-      // Create new user with welcome bonus
+      // Create new user without welcome bonus
       db.prepare(`
         INSERT INTO users (telegram_id, username, first_name, last_name, language_code, referral_code, referred_by, tokens_balance)
-        VALUES (?, ?, ?, ?, ?, ?, ?, 10)
+        VALUES (?, ?, ?, ?, ?, ?, ?, 0)
       `).run(
         telegramId,
         user.username || null,
@@ -56,21 +56,6 @@ router.post('/verify', async (req, res) => {
       );
 
       dbUser = db.prepare('SELECT * FROM users WHERE telegram_id = ?').get(telegramId);
-
-      // Award referral bonus if applicable
-      if (referredBy) {
-        const referrerUser = db.prepare('SELECT * FROM users WHERE id = ?').get(referredBy);
-        if (referrerUser) {
-          const bonusTokens = 5;
-          db.prepare('UPDATE users SET tokens_balance = tokens_balance + ? WHERE id = ?')
-            .run(bonusTokens, referredBy);
-          
-          db.prepare(`
-            INSERT INTO referral_earnings (referrer_id, referred_user_id, tokens_earned)
-            VALUES (?, ?, ?)
-          `).run(referredBy, dbUser.id, bonusTokens);
-        }
-      }
     } else {
       // Update user info
       db.prepare(`
