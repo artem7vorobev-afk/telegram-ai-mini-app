@@ -9,6 +9,7 @@ interface User {
   languageCode: string
   tokensBalance: number
   referralCode: string
+  createdAt?: string
 }
 
 interface AppState {
