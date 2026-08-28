@@ -1,4 +1,4 @@
-import { useLocation, useNavigate } from 'react-router-dom'
+import { useLocation, Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAppStore } from '../store/appStore'
 import { t } from '../lib/i18n'
@@ -13,7 +13,6 @@ interface LayoutProps {
 
 export default function Layout({ children }: LayoutProps) {
   const location = useLocation()
-  const navigate = useNavigate()
   const { user, language } = useAppStore()
 
   const navItems = [
@@ -61,16 +60,16 @@ export default function Layout({ children }: LayoutProps) {
             const Icon = item.icon
             const isActive = location.pathname === item.path
             return (
-              <button
+              <Link
                 key={item.path}
-                onClick={() => navigate(item.path)}
+                to={item.path}
                 className={`flex flex-col items-center gap-1 p-2 rounded-lg transition-colors ${
                   isActive ? 'text-telegram-accent' : 'text-telegram-secondary'
                 }`}
               >
                 <Icon className="w-5 h-5" />
                 <span className="text-xs">{item.label}</span>
-              </button>
+              </Link>
             )
           })}
         </div>
