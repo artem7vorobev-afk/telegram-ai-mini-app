@@ -14,79 +14,55 @@ export default function Profile() {
   const [activeTab, setActiveTab] = useState<'transactions' | 'deposits' | 'referrals'>('transactions')
 
   useEffect(() => {
-    fetchProfile()
-    fetchTransactions()
-    fetchDeposits()
-    fetchReferrals()
+    fetchAllData()
   }, [token])
 
-  const fetchProfile = async () => {
-    if (!token) return
+  const fetchAllData = async () => {
+    if (!token) {
+      setIsLoading(false)
+      return
+    }
 
     try {
-      const response = await fetch('/api/user/profile', {
-        headers: { 'Authorization': `Bearer ${token}` }
-      })
+      const apiUrl = (import.meta as any).env.VITE_API_URL || ''
+      const [profileRes, transactionsRes, depositsRes, referralsRes] = await Promise.all([
+        fetch(`${apiUrl}/api/user/profile`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        }),
+        fetch(`${apiUrl}/api/user/transactions`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        }),
+        fetch(`${apiUrl}/api/user/deposits`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        }),
+        fetch(`${apiUrl}/api/user/referrals`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        })
+      ])
 
-      if (response.ok) {
-        const data = await response.json()
+      if (profileRes.ok) {
+        const data = await profileRes.json()
         setProfileData(data.user)
       }
-    } catch (error) {
-      console.error('Failed to fetch profile:', error)
-    } finally {
-      setIsLoading(false)
-    }
-  }
 
-  const fetchTransactions = async () => {
-    if (!token) return
-
-    try {
-      const response = await fetch('/api/user/transactions', {
-        headers: { 'Authorization': `Bearer ${token}` }
-      })
-
-      if (response.ok) {
-        const data = await response.json()
+      if (transactionsRes.ok) {
+        const data = await transactionsRes.json()
         setTransactions(data.transactions)
       }
-    } catch (error) {
-      console.error('Failed to fetch transactions:', error)
-    }
-  }
 
-  const fetchDeposits = async () => {
-    if (!token) return
-
-    try {
-      const response = await fetch('/api/user/deposits', {
-        headers: { 'Authorization': `Bearer ${token}` }
-      })
-
-      if (response.ok) {
-        const data = await response.json()
+      if (depositsRes.ok) {
+        const data = await depositsRes.json()
         setDeposits(data.deposits)
       }
-    } catch (error) {
-      console.error('Failed to fetch deposits:', error)
-    }
-  }
 
-  const fetchReferrals = async () => {
-    if (!token) return
-
-    try {
-      const response = await fetch('/api/user/referrals', {
-        headers: { 'Authorization': `Bearer ${token}` }
-      })
-
-      if (response.ok) {
-        const data = await response.json()
+      if (referralsRes.ok) {
+        const data = await referralsRes.json()
         setReferralData(data)
       }
     } catch (error) {
-      console.error('Failed to fetch referrals:', error)
+      console.error('Failed to fetch profile data:', error)
+    } finally {
+      setIsLoading(false)
     }
   }
 

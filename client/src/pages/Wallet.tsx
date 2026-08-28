@@ -17,14 +17,18 @@ export default function Wallet() {
   }, [token])
 
   const fetchData = async () => {
-    if (!token) return
+    if (!token) {
+      setIsLoading(false)
+      return
+    }
 
     try {
+      const apiUrl = (import.meta as any).env.VITE_API_URL || ''
       const [balanceRes, transactionsRes] = await Promise.all([
-        fetch('/api/user/balance', {
+        fetch(`${apiUrl}/api/user/balance`, {
           headers: { 'Authorization': `Bearer ${token}` }
         }),
-        fetch('/api/user/transactions', {
+        fetch(`${apiUrl}/api/user/transactions`, {
           headers: { 'Authorization': `Bearer ${token}` }
         })
       ])
