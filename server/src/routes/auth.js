@@ -7,7 +7,7 @@ const { db } = require('../database');
 // Verify Telegram initData and create/get user
 router.post('/verify', async (req, res) => {
   try {
-    const { initData } = req.body;
+    const { initData, startParam } = req.body;
     
     if (!initData) {
       return res.status(400).json({ error: 'initData is required' });
@@ -31,8 +31,7 @@ router.post('/verify', async (req, res) => {
       // Generate referral code
       const referralCode = crypto.randomBytes(8).toString('hex');
       
-      // Check for referral
-      const startParam = params.get('start_param');
+      // Check for referral from startParam (from Mini App URL)
       let referredBy = null;
 
       if (startParam) {

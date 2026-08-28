@@ -20,6 +20,7 @@ declare global {
           query_id?: string
           auth_date?: number
           hash?: string
+          start_param?: string
         }
         ready: () => void
         expand: () => void

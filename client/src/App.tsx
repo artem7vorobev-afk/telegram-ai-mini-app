@@ -10,6 +10,7 @@ function App() {
     // Get Telegram user data
     const telegramUser = window.Telegram?.WebApp?.initDataUnsafe?.user
     const initData = window.Telegram?.WebApp?.initData
+    const startParam = window.Telegram?.WebApp?.initDataUnsafe?.start_param
 
     if (telegramUser) {
       // Set user data from Telegram
@@ -32,12 +33,12 @@ function App() {
 
       // Authenticate with backend
       if (initData) {
-        authenticateWithBackend(initData)
+        authenticateWithBackend(initData, startParam)
       }
     }
   }, [])
 
-  const authenticateWithBackend = async (initData: string) => {
+  const authenticateWithBackend = async (initData: string, startParam?: string) => {
     try {
       const apiUrl = (import.meta as any).env.VITE_API_URL || ''
       const response = await fetch(`${apiUrl}/api/auth/verify`, {
@@ -45,7 +46,7 @@ function App() {
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ initData })
+        body: JSON.stringify({ initData, startParam })
       })
 
       if (response.ok) {

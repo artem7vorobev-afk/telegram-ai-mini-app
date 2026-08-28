@@ -57,7 +57,13 @@ export default function Profile() {
 
       if (referralsRes.ok) {
         const data = await referralsRes.json()
-        setReferralData(data)
+        // Generate referral link with start_param
+        const botUsername = 'AIServicessbot'
+        const referralLink = `https://t.me/${botUsername}/aiservices?startapp=${data.user.referralCode}`
+        setReferralData({
+          ...data,
+          referralLink
+        })
       }
     } catch (error) {
       console.error('Failed to fetch profile data:', error)
