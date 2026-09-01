@@ -146,6 +146,46 @@ router.post('/stars', authenticateToken, async (req, res) => {
   }
 });
 
+// Telegram Stars webhook (for successful payment)
+router.post('/webhook/stars', authenticateToken, async (req, res) => {
+  try {
+    const { packageId, paymentId } = req.body;
+    const pkg = PACKAGES.find(p => p.id === packageId);
+    
+    if (pkg && req.user.userId) {
+      // Add tokens to user
+      db.prepare('UPDATE users SET tokens_balance = tokens_balance + ? WHERE id = ?')
+        .run(pkg.tokens, req.user.userId);
+      
+      // Record transaction
+      db.prepare(`
+        INSERT INTO transactions (user_id, type, amount, description, status, payment_method, payment_id)
+        VALUES (?, 'topup', ?, ?, 'completed', 'stars', ?)
+      `).run(req.user.userId, pkg.tokens, pkg.name, paymentId);
+
+      // Award 10% referral commission if user has a referrer
+      const user = db.prepare('SELECT referred_by FROM users WHERE id = ?').get(req.user.userId);
+      if (user && user.referred_by) {
+        const commission = Math.floor(pkg.tokens * 0.1); // 10% commission
+        if (commission > 0) {
+          db.prepare('UPDATE users SET tokens_balance = tokens_balance + ? WHERE id = ?')
+            .run(commission, user.referred_by);
+          
+          db.prepare(`
+            INSERT INTO referral_earnings (referrer_id, referred_user_id, tokens_earned)
+            VALUES (?, ?, ?)
+          `).run(user.referred_by, req.user.userId, commission);
+        }
+      }
+    }
+
+    res.json({ status: 'completed' });
+  } catch (error) {
+    console.error('Stars webhook error:', error);
+    res.status(500).json({ error: 'Stars webhook processing failed' });
+  }
+});
+
 // Crypto payment (manual verification)
 router.post('/crypto', authenticateToken, async (req, res) => {
   try {
