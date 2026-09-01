@@ -64,13 +64,19 @@ export default function TopUp() {
       }
 
       const data = await response.json()
+      console.log('Payment response:', data)
 
       if (selectedMethod === 'sbp' && data.confirmationUrl) {
-        window.location.href = data.confirmationUrl
+        window.Telegram.WebApp.openLink(data.confirmationUrl)
       } else if (selectedMethod === 'crypto') {
         navigate('/wallet')
-      } else if (selectedMethod === 'stars' && data.invoiceUrl) {
-        window.location.href = data.invoiceUrl
+      } else if (selectedMethod === 'stars') {
+        if (data.invoiceUrl) {
+          window.Telegram.WebApp.openLink(data.invoiceUrl)
+        } else {
+          console.error('No invoiceUrl in response:', data)
+          alert('Не удалось создать ссылку для оплаты. Проверьте консоль для деталей.')
+        }
       }
     } catch (error) {
       console.error('Payment error:', error)

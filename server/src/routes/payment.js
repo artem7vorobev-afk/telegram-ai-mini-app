@@ -129,6 +129,7 @@ router.post('/stars', authenticateToken, async (req, res) => {
     const pkg = PACKAGES.find(p => p.id === packageId);
     
     if (!pkg) {
+      console.error('Invalid package:', packageId);
       return res.status(400).json({ error: 'Invalid package' });
     }
 
@@ -137,13 +138,17 @@ router.post('/stars', authenticateToken, async (req, res) => {
     // Create invoice link via Telegram Bot API
     const botToken = process.env.TELEGRAM_BOT_TOKEN;
     if (!botToken) {
+      console.error('Bot token not configured');
       return res.status(500).json({ error: 'Bot token not configured' });
     }
+
+    console.log('Creating invoice link for package:', pkg.id, 'user:', req.user.userId);
 
     // Convert price to Telegram Stars (1 Star = ~0.01 USD, approximate)
     // Price is in kopeks (100 = 1 RUB), need to convert to Stars
     // For simplicity, use the price directly as Stars amount
     const starsAmount = Math.ceil(pkg.price / 10); // Approximate conversion
+    console.log('Stars amount:', starsAmount);
 
     const response = await axios.post(
       `https://api.telegram.org/bot${botToken}/createInvoiceLink`,
@@ -162,17 +167,20 @@ router.post('/stars', authenticateToken, async (req, res) => {
       }
     );
 
+    console.log('Telegram API response:', response.data);
+
     if (response.data.ok) {
       res.json({
         invoiceUrl: response.data.result,
         paymentId
       });
     } else {
-      res.status(500).json({ error: 'Failed to create invoice' });
+      console.error('Telegram API error:', response.data);
+      res.status(500).json({ error: 'Failed to create invoice', details: response.data });
     }
   } catch (error) {
-    console.error('Stars payment error:', error);
-    res.status(500).json({ error: 'Failed to create payment' });
+    console.error('Stars payment error:', error.response?.data || error.message);
+    res.status(500).json({ error: 'Failed to create payment', details: error.message });
   }
 });
 
