@@ -134,12 +134,42 @@ router.post('/stars', authenticateToken, async (req, res) => {
 
     const paymentId = crypto.randomUUID();
     
-    // Create invoice link (would be done via Telegram Bot API)
-    // For now, return a placeholder
-    res.json({
-      invoiceUrl: `https://t.me/your_bot?start=pay_${paymentId}`,
-      paymentId
-    });
+    // Create invoice link via Telegram Bot API
+    const botToken = process.env.TELEGRAM_BOT_TOKEN;
+    if (!botToken) {
+      return res.status(500).json({ error: 'Bot token not configured' });
+    }
+
+    // Convert price to Telegram Stars (1 Star = ~0.01 USD, approximate)
+    // Price is in kopeks (100 = 1 RUB), need to convert to Stars
+    // For simplicity, use the price directly as Stars amount
+    const starsAmount = Math.ceil(pkg.price / 10); // Approximate conversion
+
+    const response = await axios.post(
+      `https://api.telegram.org/bot${botToken}/createInvoiceLink`,
+      {
+        title: `Покупка ${pkg.tokens} токенов`,
+        description: pkg.name,
+        payload: JSON.stringify({ userId: req.user.userId, packageId, paymentId }),
+        provider_token: '', // Not needed for Telegram Stars
+        currency: 'XTR', // Telegram Stars currency
+        prices: [
+          {
+            label: pkg.name,
+            amount: starsAmount
+          }
+        ]
+      }
+    );
+
+    if (response.data.ok) {
+      res.json({
+        invoiceUrl: response.data.result,
+        paymentId
+      });
+    } else {
+      res.status(500).json({ error: 'Failed to create invoice' });
+    }
   } catch (error) {
     console.error('Stars payment error:', error);
     res.status(500).json({ error: 'Failed to create payment' });

@@ -59,10 +59,23 @@ export default function Profile() {
         const data = await referralsRes.json()
         // Generate referral link with start_param
         const botUsername = 'AIServicessbot'
-        const referralLink = `https://t.me/${botUsername}/aiservices?startapp=${data.referralCode}`
+        const referralCode = data.referralCode || profileData?.referralCode || ''
+        const referralLink = `https://t.me/${botUsername}/aiservices?startapp=${referralCode}`
         setReferralData({
           ...data,
-          referralLink
+          referralLink,
+          referralCode
+        })
+      } else {
+        // Fallback if referral endpoint fails
+        const referralCode = profileData?.referralCode || user?.referralCode || ''
+        const botUsername = 'AIServicessbot'
+        const referralLink = `https://t.me/${botUsername}/aiservices?startapp=${referralCode}`
+        setReferralData({
+          referralCode,
+          referralLink,
+          referrals: [],
+          totalEarned: 0
         })
       }
     } catch (error) {
