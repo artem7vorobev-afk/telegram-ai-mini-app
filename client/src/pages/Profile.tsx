@@ -59,7 +59,7 @@ export default function Profile() {
         const data = await referralsRes.json()
         // Generate referral link with start_param
         const botUsername = 'AIServicessbot'
-        const referralLink = `https://t.me/${botUsername}/aiservices?startapp=${data.user.referralCode}`
+        const referralLink = `https://t.me/${botUsername}/aiservices?startapp=${data.referralCode}`
         setReferralData({
           ...data,
           referralLink
