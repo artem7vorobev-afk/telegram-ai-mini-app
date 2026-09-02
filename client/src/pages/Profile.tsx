@@ -51,32 +51,44 @@ export default function Profile() {
         })
       ])
 
-      if (profileRes.status === 'fulfilled' && profileRes.value.ok) {
-        const data = await (profileRes.value as Response).json()
-        setProfileData(data.user)
+      if (profileRes.status === 'fulfilled') {
+        const response = profileRes.value as Response
+        if (response.ok) {
+          const data = await response.json()
+          setProfileData(data.user)
+        }
       }
 
-      if (transactionsRes.status === 'fulfilled' && transactionsRes.value.ok) {
-        const data = await (transactionsRes.value as Response).json()
-        setTransactions(data.transactions)
+      if (transactionsRes.status === 'fulfilled') {
+        const response = transactionsRes.value as Response
+        if (response.ok) {
+          const data = await response.json()
+          setTransactions(data.transactions)
+        }
       }
 
-      if (depositsRes.status === 'fulfilled' && depositsRes.value.ok) {
-        const data = await (depositsRes.value as Response).json()
-        setDeposits(data.deposits)
+      if (depositsRes.status === 'fulfilled') {
+        const response = depositsRes.value as Response
+        if (response.ok) {
+          const data = await response.json()
+          setDeposits(data.deposits)
+        }
       }
 
-      if (referralsRes.status === 'fulfilled' && referralsRes.value.ok) {
-        const data = await (referralsRes.value as Response).json()
-        // Generate referral link with start_param
-        const botUsername = 'AIServicessbot'
-        const referralCode = data.referralCode || profileData?.referralCode || ''
-        const referralLink = `https://t.me/${botUsername}/aiservices?startapp=${referralCode}`
-        setReferralData({
-          ...data,
-          referralLink,
-          referralCode
-        })
+      if (referralsRes.status === 'fulfilled') {
+        const response = referralsRes.value as Response
+        if (response.ok) {
+          const data = await response.json()
+          // Generate referral link with start_param
+          const botUsername = 'AIServicessbot'
+          const referralCode = data.referralCode || profileData?.referralCode || ''
+          const referralLink = `https://t.me/${botUsername}/aiservices?startapp=${referralCode}`
+          setReferralData({
+            ...data,
+            referralLink,
+            referralCode
+          })
+        }
       } else {
         // Fallback if referral endpoint fails
         const referralCode = profileData?.referralCode || user?.referralCode || ''
