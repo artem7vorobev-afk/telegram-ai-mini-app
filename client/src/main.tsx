@@ -25,6 +25,7 @@ declare global {
         ready: () => void
         expand: () => void
         enableClosingConfirmation: () => void
+        openLink: (url: string) => void
       }
     }
   }
