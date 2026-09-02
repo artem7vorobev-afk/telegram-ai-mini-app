@@ -50,17 +50,30 @@ export default function TopUp() {
       }
 
       const apiUrl = (import.meta as any).env.VITE_API_URL || ''
-      const response = await fetch(`${apiUrl}${endpoint}`, {
+      console.log('Payment request to:', `${apiUrl}${endpoint}`)
+      
+      const fetchWithTimeout = (url: string, options: RequestInit, timeout = 15000) => {
+        return Promise.race([
+          fetch(url, options),
+          new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Request timeout')), timeout)
+          )
+        ])
+      }
+
+      const response = await fetchWithTimeout(`${apiUrl}${endpoint}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify(body),
-      })
+      }) as Response
 
       if (!response.ok) {
-        throw new Error('Payment failed')
+        const errorData = await response.json().catch(() => ({}))
+        console.error('Payment failed:', errorData)
+        throw new Error(errorData.error || 'Payment failed')
       }
 
       const data = await response.json()
@@ -80,7 +93,7 @@ export default function TopUp() {
       }
     } catch (error) {
       console.error('Payment error:', error)
-      alert('Произошла ошибка при обработке платежа')
+      alert(error instanceof Error ? error.message : 'Произошла ошибка при обработке платежа')
     } finally {
       setIsProcessing(false)
     }

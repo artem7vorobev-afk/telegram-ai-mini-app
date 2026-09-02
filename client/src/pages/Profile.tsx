@@ -25,38 +25,49 @@ export default function Profile() {
 
     try {
       const apiUrl = (import.meta as any).env.VITE_API_URL || ''
-      const [profileRes, transactionsRes, depositsRes, referralsRes] = await Promise.all([
-        fetch(`${apiUrl}/api/user/profile`, {
+      console.log('Fetching data from:', apiUrl)
+      
+      const fetchWithTimeout = (url: string, options: RequestInit, timeout = 10000) => {
+        return Promise.race([
+          fetch(url, options),
+          new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Request timeout')), timeout)
+          )
+        ])
+      }
+
+      const [profileRes, transactionsRes, depositsRes, referralsRes] = await Promise.allSettled([
+        fetchWithTimeout(`${apiUrl}/api/user/profile`, {
           headers: { 'Authorization': `Bearer ${token}` }
         }),
-        fetch(`${apiUrl}/api/user/transactions`, {
+        fetchWithTimeout(`${apiUrl}/api/user/transactions`, {
           headers: { 'Authorization': `Bearer ${token}` }
         }),
-        fetch(`${apiUrl}/api/user/deposits`, {
+        fetchWithTimeout(`${apiUrl}/api/user/deposits`, {
           headers: { 'Authorization': `Bearer ${token}` }
         }),
-        fetch(`${apiUrl}/api/user/referrals`, {
+        fetchWithTimeout(`${apiUrl}/api/user/referrals`, {
           headers: { 'Authorization': `Bearer ${token}` }
         })
       ])
 
-      if (profileRes.ok) {
-        const data = await profileRes.json()
+      if (profileRes.status === 'fulfilled' && profileRes.value.ok) {
+        const data = await profileRes.value.json()
         setProfileData(data.user)
       }
 
-      if (transactionsRes.ok) {
-        const data = await transactionsRes.json()
+      if (transactionsRes.status === 'fulfilled' && transactionsRes.value.ok) {
+        const data = await transactionsRes.value.json()
         setTransactions(data.transactions)
       }
 
-      if (depositsRes.ok) {
-        const data = await depositsRes.json()
+      if (depositsRes.status === 'fulfilled' && depositsRes.value.ok) {
+        const data = await depositsRes.value.json()
         setDeposits(data.deposits)
       }
 
-      if (referralsRes.ok) {
-        const data = await referralsRes.json()
+      if (referralsRes.status === 'fulfilled' && referralsRes.value.ok) {
+        const data = await referralsRes.value.json()
         // Generate referral link with start_param
         const botUsername = 'AIServicessbot'
         const referralCode = data.referralCode || profileData?.referralCode || ''
