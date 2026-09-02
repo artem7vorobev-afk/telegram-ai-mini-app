@@ -40,7 +40,9 @@ export default function Wallet() {
 
       if (transactionsRes.ok) {
         const transactionsData = await transactionsRes.json()
-        setTransactions(transactionsData.transactions)
+        setTransactions(Array.isArray(transactionsData.transactions) ? transactionsData.transactions : [])
+      } else {
+        setTransactions([])
       }
     } catch (error) {
       console.error('Failed to fetch wallet data:', error)

@@ -51,7 +51,10 @@ export default function Chat() {
         },
         body: JSON.stringify({
           model: currentModel,
-          messages: [...messages, userMessage].map(m => ({
+          messages: Array.isArray(messages) ? [...messages, userMessage].map(m => ({
+            role: m.role,
+            content: m.content
+          })) : [userMessage].map(m => ({
             role: m.role,
             content: m.content
           }))

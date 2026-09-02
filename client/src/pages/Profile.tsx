@@ -329,8 +329,8 @@ export default function Profile() {
 
           {/* Referrals List */}
           <div>
-            <h3 className="font-semibold mb-3">Приглашенные ({referralData?.referrals?.length || 0})</h3>
-            {referralData?.referrals?.length === 0 ? (
+            <h3 className="font-semibold mb-3">Приглашенные ({Array.isArray(referralData?.referrals) ? referralData.referrals.length : 0})</h3>
+            {!Array.isArray(referralData?.referrals) || referralData.referrals.length === 0 ? (
               <div className="card text-center py-8 text-telegram-secondary">
                 <Users className="w-12 h-12 mx-auto mb-2 opacity-50" />
                 <p>Вы еще никого не пригласили</p>

@@ -126,7 +126,7 @@ export default function Referrals() {
       </div>
 
       {/* Referrals List */}
-      {referralData?.referrals && referralData.referrals.length > 0 && (
+      {Array.isArray(referralData?.referrals) && referralData.referrals.length > 0 && (
         <div>
           <h3 className="font-semibold mb-3 flex items-center gap-2">
             <Users className="w-5 h-5" />
