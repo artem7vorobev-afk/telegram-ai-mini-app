@@ -52,22 +52,22 @@ export default function Profile() {
       ])
 
       if (profileRes.status === 'fulfilled' && profileRes.value.ok) {
-        const data = await profileRes.value.json()
+        const data = await (profileRes.value as Response).json()
         setProfileData(data.user)
       }
 
       if (transactionsRes.status === 'fulfilled' && transactionsRes.value.ok) {
-        const data = await transactionsRes.value.json()
+        const data = await (transactionsRes.value as Response).json()
         setTransactions(data.transactions)
       }
 
       if (depositsRes.status === 'fulfilled' && depositsRes.value.ok) {
-        const data = await depositsRes.value.json()
+        const data = await (depositsRes.value as Response).json()
         setDeposits(data.deposits)
       }
 
       if (referralsRes.status === 'fulfilled' && referralsRes.value.ok) {
-        const data = await referralsRes.value.json()
+        const data = await (referralsRes.value as Response).json()
         // Generate referral link with start_param
         const botUsername = 'AIServicessbot'
         const referralCode = data.referralCode || profileData?.referralCode || ''
