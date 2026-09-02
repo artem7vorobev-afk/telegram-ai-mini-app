@@ -63,16 +63,24 @@ export default function Profile() {
         const response = transactionsRes.value as Response
         if (response.ok) {
           const data = await response.json()
-          setTransactions(data.transactions)
+          setTransactions(Array.isArray(data.transactions) ? data.transactions : [])
+        } else {
+          setTransactions([])
         }
+      } else {
+        setTransactions([])
       }
 
       if (depositsRes.status === 'fulfilled') {
         const response = depositsRes.value as Response
         if (response.ok) {
           const data = await response.json()
-          setDeposits(data.deposits)
+          setDeposits(Array.isArray(data.deposits) ? data.deposits : [])
+        } else {
+          setDeposits([])
         }
+      } else {
+        setDeposits([])
       }
 
       if (referralsRes.status === 'fulfilled') {
@@ -86,7 +94,8 @@ export default function Profile() {
           setReferralData({
             ...data,
             referralLink,
-            referralCode
+            referralCode,
+            referrals: Array.isArray(data.referrals) ? data.referrals : []
           })
         }
       } else {
