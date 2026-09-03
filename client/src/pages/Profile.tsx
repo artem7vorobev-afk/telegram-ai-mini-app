@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { useAppStore } from '../store/appStore'
-import { User, Settings, Globe, Bell, LogOut, Loader2, Copy, History, Wallet, Users, ArrowUpRight, ArrowDownLeft } from 'lucide-react'
+import { User, Settings, Globe, Bell, Loader2, Copy, History, Wallet, Users, ArrowUpRight, ArrowDownLeft } from 'lucide-react'
 
 export default function Profile() {
-  const { user, token, language, setLanguage, logout } = useAppStore()
+  const { user, token, language, setLanguage } = useAppStore()
   const [profileData, setProfileData] = useState<any>(null)
   const [transactions, setTransactions] = useState<any[]>([])
   const [deposits, setDeposits] = useState<any[]>([])
@@ -55,7 +55,7 @@ export default function Profile() {
         const response = profileRes.value as Response
         if (response.ok) {
           const data = await response.json()
-          setProfileData(data.user)
+          setProfileData(data.user || data)
         }
       }
 
@@ -134,11 +134,6 @@ export default function Profile() {
         console.error('Failed to update language:', error)
       }
     }
-  }
-
-  const handleLogout = () => {
-    logout()
-    window.location.reload()
   }
 
   const copyToClipboard = (text: string) => {
@@ -434,15 +429,6 @@ export default function Profile() {
           </div>
         </div>
       </div>
-
-      {/* Logout Button */}
-      <button
-        onClick={handleLogout}
-        className="card w-full text-red-400 font-medium flex items-center justify-center gap-2 hover:bg-red-500/10 transition-colors"
-      >
-        <LogOut className="w-5 h-5" />
-        Выйти
-      </button>
     </div>
   )
 }
