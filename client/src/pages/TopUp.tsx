@@ -1,9 +1,8 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { motion } from 'framer-motion'
 import { useAppStore } from '../store/appStore'
 import { t } from '../lib/i18n'
-import { ArrowLeft, CreditCard, Star, Coins as CryptoIcon, Loader2, Check } from 'lucide-react'
+import { ArrowLeft, Star, Loader2, Check } from 'lucide-react'
 
 const packages = [
   { id: 1, tokens: 100, price: 99, name: 'Starter' },
@@ -12,19 +11,15 @@ const packages = [
 ]
 
 const paymentMethods = [
-  { id: 'sbp', name: 'СБП', icon: CreditCard, description: 'Оплата через Систему быстрых платежей' },
   { id: 'stars', name: 'Telegram Stars', icon: Star, description: 'Оплата звездами Telegram' },
-  { id: 'crypto', name: 'Криптовалюта', icon: CryptoIcon, description: 'USDT / TON' },
 ]
 
 export default function TopUp() {
   const navigate = useNavigate()
   const { token } = useAppStore()
   const [selectedPackage, setSelectedPackage] = useState(packages[1])
-  const [selectedMethod, setSelectedMethod] = useState('sbp')
+  const [selectedMethod, setSelectedMethod] = useState('stars')
   const [isProcessing, setIsProcessing] = useState(false)
-  const [cryptoTxHash, setCryptoTxHash] = useState('')
-  const [showCryptoInput, setShowCryptoInput] = useState(false)
 
   const handlePayment = async () => {
     if (!token) return
@@ -32,22 +27,8 @@ export default function TopUp() {
     setIsProcessing(true)
 
     try {
-      let endpoint = '/api/payment/'
-      let body: any = { packageId: selectedPackage.id }
-
-      switch (selectedMethod) {
-        case 'sbp':
-          endpoint += 'sbp'
-          break
-        case 'stars':
-          endpoint += 'stars'
-          break
-        case 'crypto':
-          endpoint += 'crypto'
-          body.currency = 'USDT'
-          body.txHash = cryptoTxHash
-          break
-      }
+      const endpoint = '/api/payment/stars'
+      const body: any = { packageId: selectedPackage.id }
 
       const apiUrl = (import.meta as any).env.VITE_API_URL || ''
       console.log('Payment request to:', `${apiUrl}${endpoint}`)
@@ -79,17 +60,11 @@ export default function TopUp() {
       const data = await response.json()
       console.log('Payment response:', data)
 
-      if (selectedMethod === 'sbp' && data.confirmationUrl) {
-        window.Telegram.WebApp.openLink(data.confirmationUrl)
-      } else if (selectedMethod === 'crypto') {
-        navigate('/wallet')
-      } else if (selectedMethod === 'stars') {
-        if (data.invoiceUrl) {
-          window.Telegram.WebApp.openLink(data.invoiceUrl)
-        } else {
-          console.error('No invoiceUrl in response:', data)
-          alert('Не удалось создать ссылку для оплаты. Проверьте консоль для деталей.')
-        }
+      if (data.invoiceUrl) {
+        window.Telegram.WebApp.openLink(data.invoiceUrl)
+      } else {
+        console.error('No invoiceUrl in response:', data)
+        alert('Не удалось создать ссылку для оплаты. Проверьте консоль для деталей.')
       }
     } catch (error) {
       console.error('Payment error:', error)
@@ -148,10 +123,7 @@ export default function TopUp() {
             return (
               <button
                 key={method.id}
-                onClick={() => {
-                  setSelectedMethod(method.id)
-                  setShowCryptoInput(method.id === 'crypto')
-                }}
+                onClick={() => setSelectedMethod(method.id)}
                 className={`card w-full text-left transition-all ${
                   selectedMethod === method.id ? 'border-telegram-accent border-2' : ''
                 }`}
@@ -176,31 +148,10 @@ export default function TopUp() {
         </div>
       </div>
 
-      {/* Crypto Input */}
-      {showCryptoInput && (
-        <motion.div
-          initial={{ opacity: 0, height: 0 }}
-          animate={{ opacity: 1, height: 'auto' }}
-          className="card"
-        >
-          <label className="block text-sm font-medium mb-2">Хеш транзакции</label>
-          <input
-            type="text"
-            value={cryptoTxHash}
-            onChange={(e) => setCryptoTxHash(e.target.value)}
-            placeholder="Введите хеш транзакции..."
-            className="input w-full"
-          />
-          <p className="text-xs text-telegram-secondary mt-2">
-            Отправьте {selectedPackage.price} USDT на указанный адрес и введите хеш транзакции
-          </p>
-        </motion.div>
-      )}
-
       {/* Pay Button */}
       <button
         onClick={handlePayment}
-        disabled={isProcessing || (selectedMethod === 'crypto' && !cryptoTxHash)}
+        disabled={isProcessing}
         className="btn-primary w-full flex items-center justify-center gap-2 disabled:opacity-50"
       >
         {isProcessing ? (
@@ -210,8 +161,8 @@ export default function TopUp() {
           </>
         ) : (
           <>
-            <CreditCard className="w-5 h-5" />
-            Оплатить {selectedPackage.price} ₽
+            <Star className="w-5 h-5" />
+            Оплатить {selectedPackage.tokens} токенов
           </>
         )}
       </button>

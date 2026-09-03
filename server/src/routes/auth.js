@@ -28,8 +28,21 @@ router.post('/verify', async (req, res) => {
     let dbUser = db.prepare('SELECT * FROM users WHERE telegram_id = ?').get(telegramId);
 
     if (!dbUser) {
-      // Generate referral code
-      const referralCode = crypto.randomBytes(8).toString('hex');
+      // Generate unique referral code with retry mechanism
+      let referralCode;
+      let attempts = 0;
+      const maxAttempts = 10;
+      
+      while (attempts < maxAttempts) {
+        referralCode = crypto.randomBytes(8).toString('hex');
+        const existing = db.prepare('SELECT id FROM users WHERE referral_code = ?').get(referralCode);
+        if (!existing) break;
+        attempts++;
+      }
+      
+      if (attempts >= maxAttempts) {
+        return res.status(500).json({ error: 'Failed to generate unique referral code' });
+      }
       
       // Check for referral from startParam (from Mini App URL)
       let referredBy = null;
