@@ -9,7 +9,10 @@ router.post('/verify', async (req, res) => {
   try {
     const { initData, startParam } = req.body;
     
+    console.log('Auth request received:', { initData: initData ? 'present' : 'missing', startParam });
+    
     if (!initData) {
+      console.error('initData is required');
       return res.status(400).json({ error: 'initData is required' });
     }
 
@@ -18,16 +21,21 @@ router.post('/verify', async (req, res) => {
     const userStr = params.get('user');
     
     if (!userStr) {
+      console.error('Invalid initData - no user string');
       return res.status(400).json({ error: 'Invalid initData' });
     }
 
     const user = JSON.parse(decodeURIComponent(userStr));
     const telegramId = user.id.toString();
+    
+    console.log('Telegram user parsed:', { telegramId, username: user.username, firstName: user.first_name });
 
     // Check if user exists
     let dbUser = db.prepare('SELECT * FROM users WHERE telegram_id = ?').get(telegramId);
 
     if (!dbUser) {
+      console.log('Creating new user for telegram_id:', telegramId);
+      
       // Generate unique referral code with retry mechanism
       let referralCode;
       let attempts = 0;
@@ -41,6 +49,7 @@ router.post('/verify', async (req, res) => {
       }
       
       if (attempts >= maxAttempts) {
+        console.error('Failed to generate unique referral code');
         return res.status(500).json({ error: 'Failed to generate unique referral code' });
       }
       
@@ -51,6 +60,7 @@ router.post('/verify', async (req, res) => {
         const referrer = db.prepare('SELECT id FROM users WHERE referral_code = ?').get(startParam);
         if (referrer) {
           referredBy = referrer.id.toString();
+          console.log('User referred by:', referredBy);
         }
       }
 
@@ -69,7 +79,10 @@ router.post('/verify', async (req, res) => {
       );
 
       dbUser = db.prepare('SELECT * FROM users WHERE telegram_id = ?').get(telegramId);
+      console.log('New user created:', { id: dbUser.id, telegramId: dbUser.telegram_id, referralCode: dbUser.referral_code });
     } else {
+      console.log('User already exists, updating info:', { id: dbUser.id, telegramId: dbUser.telegram_id });
+      
       // Update user info
       db.prepare(`
         UPDATE users 
@@ -81,6 +94,8 @@ router.post('/verify', async (req, res) => {
         user.last_name || null,
         telegramId
       );
+      
+      dbUser = db.prepare('SELECT * FROM users WHERE telegram_id = ?').get(telegramId);
     }
 
     // Generate JWT token
@@ -90,7 +105,7 @@ router.post('/verify', async (req, res) => {
       { expiresIn: '30d' }
     );
 
-    res.json({
+    const responseData = {
       token,
       user: {
         id: dbUser.id,
@@ -100,9 +115,14 @@ router.post('/verify', async (req, res) => {
         lastName: dbUser.last_name,
         languageCode: dbUser.language_code,
         tokensBalance: dbUser.tokens_balance,
-        referralCode: dbUser.referral_code
+        referralCode: dbUser.referral_code,
+        createdAt: dbUser.created_at
       }
-    });
+    };
+    
+    console.log('Sending auth response:', { userId: responseData.user.id, telegramId: responseData.user.telegramId, tokensBalance: responseData.user.tokensBalance });
+    
+    res.json(responseData);
   } catch (error) {
     console.error('Auth error:', error);
     res.status(500).json({ error: 'Authentication failed' });

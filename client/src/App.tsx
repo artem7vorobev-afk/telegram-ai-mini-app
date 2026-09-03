@@ -4,7 +4,7 @@ import Router from './components/Router'
 import { useAppStore } from './store/appStore'
 
 function App() {
-  const { setUser, setLanguage } = useAppStore()
+  const { setUser, setLanguage, setToken } = useAppStore()
 
   useEffect(() => {
     // Get Telegram user data
@@ -12,8 +12,14 @@ function App() {
     const initData = window.Telegram?.WebApp?.initData
     const startParam = window.Telegram?.WebApp?.initDataUnsafe?.start_param
 
+    console.log('Telegram WebApp data:', {
+      telegramUser,
+      initData: initData ? 'present' : 'missing',
+      startParam
+    })
+
     if (telegramUser) {
-      // Set user data from Telegram
+      // Set user data from Telegram (temporary, will be updated from backend)
       setUser({
         id: telegramUser.id,
         telegramId: telegramUser.id.toString(),
@@ -34,13 +40,19 @@ function App() {
       // Authenticate with backend
       if (initData) {
         authenticateWithBackend(initData, startParam)
+      } else {
+        console.error('No initData from Telegram WebApp')
       }
+    } else {
+      console.error('No telegramUser from Telegram WebApp')
     }
   }, [])
 
   const authenticateWithBackend = async (initData: string, startParam?: string) => {
     try {
       const apiUrl = (import.meta as any).env.VITE_API_URL || ''
+      console.log('Authenticating with backend:', apiUrl)
+      
       const response = await fetch(`${apiUrl}/api/auth/verify`, {
         method: 'POST',
         headers: {
@@ -49,15 +61,33 @@ function App() {
         body: JSON.stringify({ initData, startParam })
       })
 
+      console.log('Auth response status:', response.status)
+
       if (response.ok) {
         const data = await response.json()
+        console.log('Auth response data:', data)
+        
         // Store token in Zustand
-        useAppStore.getState().setToken(data.token)
+        setToken(data.token)
+        
         // Update user with backend data
-        useAppStore.getState().setUser(data.user)
+        setUser({
+          id: data.user.id,
+          telegramId: data.user.telegram_id,
+          username: data.user.username,
+          firstName: data.user.first_name,
+          lastName: data.user.last_name,
+          languageCode: data.user.language_code,
+          tokensBalance: data.user.tokens_balance,
+          referralCode: data.user.referral_code,
+          createdAt: data.user.created_at
+        })
+      } else {
+        const errorData = await response.json().catch(() => ({}))
+        console.error('Auth failed:', errorData)
       }
     } catch (error) {
-      console.error('Authentication failed:', error)
+      console.error('Authentication error:', error)
     }
   }
 
